@@ -1,14 +1,14 @@
 # TSLA Project - OSU Artificial Intelligence - Project #3
 
-SUMMARY ():
+SUMMARY:
+  ***In this project we utilized Kaggle TSLA Stock Price Data. We will be using LSTM nodes which have the ability to hold information over long-periods of time. In our case, the information we would be storing would be the TSLA closing stock price. Our analysis will also utilize time-series forecasting.***
 
-OBJECTIVES ():
+OBJECTIVES:
+  ***Our main objectives for this project includes predicting the TSLA stock price through LSTM Neural Network Nodes. In performing our test and analysis, we will be utilizing these nodes and their storage capabilities to accurately predict our stock prices.***
 
-OUR DATASET ():
+OUR DATASET: ***https://www.kaggle.com/datasets/jillanisofttech/tesla-stock-price***
 
-ISSUES WITH OUR DATASET ():
-
-STATISTICS / GRAPHICS ():
+STATISTICS / GRAPHICS:
 
 MISC NOTES:
 
