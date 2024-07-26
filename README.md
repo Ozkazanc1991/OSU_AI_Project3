@@ -6,7 +6,7 @@
 ***OBJECTIVES:***
   ***Our main objectives for this project includes predicting the TSLA stock price through LSTM Neural Network Nodes. In performing our test and analysis, we will be utilizing these nodes and their storage capabilities to accurately predict our stock prices.***
 
-***OUR DATASET:*** ***https://www.kaggle.com/datasets/jillanisofttech/tesla-stock-price***
+***OUR DATASET:*** ***All Financial Data comes from Yahoo Finance***
 
 ***STATISTICS / GRAPHICS:***
 
