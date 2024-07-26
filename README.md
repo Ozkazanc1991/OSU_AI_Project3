@@ -14,7 +14,7 @@
 
 Programming Language Used: Python.
 
-Packages Used: Anaconda, Matplotlib, Pandas, PyPlot, SciPy, and Numpy.
+Packages Used: Anaconda, Pandas, Numpy, Matplotlib.pyplot, sklearn.preprocessing - MinMaxScaler,  tensorflow.keras.models - Sequential, and tensorflow.keras.layers - LSTM, Dense.
 
 Tools Used: Jupyter Notebook (IPython).
 
