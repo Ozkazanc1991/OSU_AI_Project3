@@ -1,22 +1,17 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import requests
 
 from datetime import datetime
 from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense
 
-
-def get_yahoo_finance_data(stock_ticker_abbreviation) : 
-    url = f"https://query1.finance.yahoo.com/v7/finance/download/{stock_ticker_abbreviation.upper()}?period1=0&period2=2721954782&interval=1d&events=history&includeAdjustedClose=true"
-    return requests.get(url).content
-
-
-
-def get_LSTM_predictions(df, train_test_split, model, window_size) :
+def get_LSTM_predictions(df, ticker_symbol, train_test_split, model, window_size) :
     
+    # Features to consider
+    features = ['Open', 'High', 'Low', 'Close', 'Volume']
+
     # Calculate where and how much the data should be split for train and test.
     train_data_len   = int(len(df) * train_test_split)
     test_data_len    = len(df)-train_data_len
@@ -80,16 +75,13 @@ def get_LSTM_predictions(df, train_test_split, model, window_size) :
     
     # Train the model
     model.fit(X_train, y_train, batch_size=1, epochs=1, verbose=1)
-    unixtime = int(datetime.now().timestamp())
-    model.save(f'Saved_Models/lstm_model-{unixtime}.keras')
 
     # Get the predictions
     predictions = scaler.inverse_transform(model.predict(X_test))
 
+    return (predictions, model)
 
-    return predictions
-
-def plot_predictions(df, train_test_split, predictions, show_all) :
+def plot_predictions(df, ticker_symbol, train_test_split, predictions, show_all) :
     
     # Prepare the data for the X-Axis
     train_data_len = int(len(df) * train_test_split)
@@ -102,7 +94,7 @@ def plot_predictions(df, train_test_split, predictions, show_all) :
     actual['Predictions'] = predictions
 
     plt.figure(figsize=(16,8))
-    plt.title('Model')
+    plt.title(ticker_symbol)
     plt.xlabel('Date')
     plt.ylabel('Close Price USD ($)')
 
