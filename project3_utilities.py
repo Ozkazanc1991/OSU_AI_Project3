@@ -1,12 +1,21 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import requests
+
+from datetime import datetime
 from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense
 
 
-def get_predictions(df, train_test_split, model) :
+def get_yahoo_finance_data(stock_ticker_abbreviation) : 
+    url = f"https://query1.finance.yahoo.com/v7/finance/download/{stock_ticker_abbreviation.upper()}?period1=0&period2=2721954782&interval=1d&events=history&includeAdjustedClose=true"
+    return requests.get(url).content
+
+
+
+def get_LSTM_predictions(df, train_test_split, model, window_size) :
     
     # Calculate where and how much the data should be split for train and test.
     train_data_len   = int(len(df) * train_test_split)
@@ -31,9 +40,6 @@ def get_predictions(df, train_test_split, model) :
 
     X_train = []
     y_train = []
-
-    # Set the size of the sliding window, in this case, arbitraily 30 days.
-    window_size = 30  
 
     # Populate the X_train and y_train, using sliding windows for X.
     for i in range(window_size, len(train_data)):
@@ -74,6 +80,8 @@ def get_predictions(df, train_test_split, model) :
     
     # Train the model
     model.fit(X_train, y_train, batch_size=1, epochs=1, verbose=1)
+    unixtime = int(datetime.now().timestamp())
+    model.save(f'Saved_Models/lstm_model-{unixtime}.keras')
 
     # Get the predictions
     predictions = scaler.inverse_transform(model.predict(X_test))
@@ -106,3 +114,44 @@ def plot_predictions(df, train_test_split, predictions, show_all) :
     else : plt.legend(['Actual', 'Predictions'], loc='lower right')
     
     return plt
+
+def generate_buy_sell(df, predictions) : 
+
+    # First populate the new features with blanks.
+    df["Predictions"] = None
+    df["Buy_Sell"]    = None
+
+    # Then, fill the new predictions feature with the prediction values, but
+    # "fill from the bottom"
+    insertion_point = len(df)-len(predictions)
+    df.loc[insertion_point:insertion_point+len(predictions)-1, "Predictions"] = predictions
+
+    # Next calculate and fill the buy/sell state into the buy_sell feature.
+    
+    # Calculate the difference between the current row and the previous row
+    df['Close_Difference'] = df['Close'].diff()
+
+    def buy_or_sell(diff):
+        if pd.isnull(diff):  # Handle the first row or any NaN values
+            return None
+        elif diff > 0:
+            return "BUY"
+        else:
+            return "SELL"
+
+    # Apply the function to the 'Difference' column to create the 'Action' column
+    df["Buy_Sell"] = df['Close_Difference'].apply(buy_or_sell)
+    df = df.drop(columns=['Close_Difference'])
+
+    return df
+
+def score_the_model(df) :
+
+    def calculate_profit(row):
+        if row['Buy_Sell'] == 'BUY' : return row['Close'] - row['Open']
+        else : return 0
+
+    # Apply the function to each row
+    df['Profit'] = df.apply(calculate_profit, axis=1)
+
+    return (df, df['Profit'].sum())
