@@ -6,9 +6,12 @@
 ***OBJECTIVES:***
   ***Our main objectives for this project includes predicting the TSLA stock price through LSTM Neural Network Nodes. In performing our test and analysis, we will be utilizing these nodes and their storage capabilities to accurately predict our stock prices.***
 
-***OUR DATASET:*** ***All Financial Data comes from Yahoo Finance***
+***OUR DATASET:*** 
+  ***All Financial Data comes from Yahoo Finance.***
+  ***In creating our LSTM Model, we also created an API Key to allow for pulling of headline information found in Yahoo Finance.***
 
 ***STATISTICS / GRAPHICS:***
+  ***In creating our LSTM Model, we utilized ‘adam’ as our optimizer. We then created our train_test_split and plotted our predictions. In plotting our predictions, we followed up by creating Buy / Sell predictions.***
 
 ***MISC NOTES:***
 
