@@ -148,13 +148,70 @@ def generate_buy_sell(df, predictions) :
 
     return df
 
-def score_the_model(df) :
+def score_the_model(df, start_date, end_date, verbose=False) :
+    
+    import pytz
 
-    def calculate_profit(row):
-        if row['Buy_Sell'] == 'BUY' : return row['Close'] - row['Open']
-        else : return 0
+    date_format = "%Y-%m-%d"
+    start_date = datetime.strptime(start_date, date_format)
+    end_date = datetime.strptime(end_date, date_format)
 
-    # Apply the function to each row
-    df['Profit'] = df.apply(calculate_profit, axis=1)
+    timezone = pytz.timezone('America/New_York')
+    start_date = timezone.localize(start_date)
+    end_date = timezone.localize(end_date)
 
-    return (df, df['Profit'].sum())
+    # Filter the DataFrame based on the date range
+    filtered_df = df[(df.index >= start_date) & (df.index < end_date)]
+
+    initial_price = filtered_df.iloc[0]["Close"]
+    final_actual_price = filtered_df.iloc[-1]["Close"]
+    initial_buy_state = filtered_df.iloc[0]["Buy_Sell"]
+    current_stock_count = 0
+    current_balance = 0
+
+    # Set the initial starting state
+    if initial_buy_state == "BUY" :
+        current_stock_count = 1
+        current_balance = 0
+    else : # initial_buy_state == "SELL"
+        current_stock_count = 0
+        current_balance = initial_price
+
+    # Dropping the first day because we've already recorded our initial 
+    # starting state
+    filtered_df = filtered_df.drop(filtered_df.index[0])
+
+    if verbose : 
+        print("Initial Balance: ", initial_price)
+        print("Initial Buy State: ", initial_buy_state)
+        print()
+
+    current_state = initial_buy_state
+    current_balance = initial_price
+
+    for date, row in filtered_df.iterrows():
+
+        #print(date, row["Close"],row["Buy_Sell"])
+
+        if row["Buy_Sell"] != current_state : 
+            current_state = row["Buy_Sell"]
+            if row["Buy_Sell"] == "BUY" :
+                current_stock_count = current_balance / row["Open"]
+                current_balance = 0
+                if verbose: print(f"{date} Bought {current_stock_count} shares | Current Balance {current_balance}")
+                
+            else : # row["Buy_Sell"] == "SELL"
+                current_balance = current_stock_count * row["Open"]
+                if verbose: print(f"{date} Sold {current_stock_count} shares | Current Balance {current_balance}")
+                current_stock_count = 0
+
+    if current_balance == 0 : 
+        # The money is still in the market and we need to cash out.
+        current_balance = current_stock_count * filtered_df.iloc[-1]["Close"]
+
+    if verbose:
+        print()
+        print("Final Balance: ", current_balance)
+        print("Difference between actual close price and final balance: ", current_balance - final_actual_price)
+
+    return (current_balance - final_actual_price)
