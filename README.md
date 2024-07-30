@@ -1,4 +1,4 @@
-#Stock Analysis - OSU Artificial Intelligence - Project #3
+# Stock Analysis - OSU Artificial Intelligence - Project #3
 
 ***SUMMARY:***
   ***In this project we utilized Kaggle TSLA Stock Price Data. We will be using LSTM nodes which have the ability to hold information over long-periods of time. In our case, the information we would be storing would be the TSLA closing stock price. Our analysis will also utilize time-series forecasting.***
