@@ -11,9 +11,14 @@
   ***In creating our LSTM Model, we also created an API Key to allow for pulling of headline information found in Yahoo Finance.***
 
 ***STATISTICS / GRAPHICS:***
-  ***In creating our LSTM Model, we utilized ‘adam’ as our optimizer. We then created our train_test_split and plotted our predictions. In plotting our predictions, we followed up by creating Buy / Sell predictions.***
+  ***In creating our LSTM Model, we utilized ‘Adam’ as our optimizer. We then created our train_test_split and plotted our predictions. In plotting our predictions, we followed up by creating Buy / Sell predictions.***
+  ***Our code enables comparisons which compare buying / holding / selling for each iteration. (With each decision, what would happen if we chose a different option.)***
+  ***As our model cycles through buying and selling iterations, the profit or loss is summed in a cumulative balance.***
 
 ***MISC NOTES:***
+  ***In creating our LSTM Model, we enabled a user function that allows for input of a 'stock-ticker' letting the user choose what stock they would like to see information for. This increases the functionality and capabilities ten-fold.***
+  ***Our model hypertunes / trains our information by years.***
+  ***Our dataset is trained on three node layers with our activation being 'relu'.***
 
 Programming Language Used: Python.
 
