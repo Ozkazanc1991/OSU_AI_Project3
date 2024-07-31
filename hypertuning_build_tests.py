@@ -2,6 +2,7 @@ import pandas as pd
 import yfinance as yf
 import numpy as np
 import csv
+import random
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import Sequential
@@ -36,17 +37,50 @@ for t in test_splits :
                                             "layer2_nodes": l2, 
                                             "layer3_nodes": l3 } )
 
-# Open the file in write mode
+def get_test_case(settings) : 
 
-for i in range(1,4) : 
-    with open(f"testcases_{i}.csv", mode='w', newline='') as file:
-        # Create a DictWriter object
-        writer = csv.DictWriter(file, fieldnames=settings[0].keys())
-        
-        # Write the header
+    # Randomly select a setting from the settings
+    random_index = random.randint(0, len(settings) - 1)
+
+    # Pop the element at the randomly selected index
+    selected_element = settings.pop(random_index)
+
+    return (settings, selected_element)
+
+def write_test_case(test_case, output_file_number, fieldnames) :
+    
+    with open(f"Test_Cases/testcases_{output_file_number}.csv", mode='a', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames)
+        writer.writerow(test_case)
+    file.close()
+
+
+
+
+current_file = 1
+total_files = 7
+fieldnames=settings[0].keys()
+
+
+# Start the files, write the headers.
+for i in range(1,total_files+1) :
+    with open(f"Test_Cases/testcases_{i}.csv", mode='w', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames)
         writer.writeheader()
-        
-        # Write the rows
-        for row in settings:
-            writer.writerow(row)
+    file.close()
+
+# iterate through the settings, popping off a random setting and writing it 
+# to a test file
+while(settings) :
+
+    # Randomly pull a test case from the list, reducing the size of list by one
+    (settings, selected_setting) = get_test_case(settings)
+
+    # Write the test case to the file
+    write_test_case(selected_setting, current_file, fieldnames)
+
+    if current_file == total_files : current_file = 1
+    else : current_file += 1
+
+
 

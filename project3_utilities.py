@@ -19,9 +19,20 @@ def get_LSTM_predictions(df,
                          layer3_nodes = 64,
                          verbose = 0) :
 
+    # Had some issues after loading the test data in from a csv, it lost the 
+    # data types, was passing them in as strings, so I need to force this here.
+    train_test_split = float(train_test_split)
+    window_size = int(window_size)
+    batch_size = int(batch_size) 
+    epochs = int(epochs)
+    layer1_nodes = int(layer1_nodes)
+    layer2_nodes = int(layer2_nodes)
+    layer3_nodes = int(layer3_nodes)
+    verbose = int(verbose)
+
     # Calculate where and how much the data should be split for train and test.
-    train_data_len   = int(len(df) * train_test_split)
-    test_data_len    = len(df)-train_data_len
+    train_data_len   = int(len(df) * float(train_test_split))
+    test_data_len    = int(len(df)-float(train_data_len))
 
     # Features to include
     features = ["Open","High","Low","Volume"]
