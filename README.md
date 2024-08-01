@@ -1,10 +1,10 @@
 # Stock Analysis - OSU Artificial Intelligence - Project #3
 
 ***SUMMARY:***
-  ***In this project we utilized Kaggle TSLA Stock Price Data. We will be using LSTM nodes which have the ability to hold information over long-periods of time. In our case, the information we would be storing would be the TSLA closing stock price. Our analysis will also utilize time-series forecasting.***
+  ***In this project we utilized Yahoo Finanace Stock Price Data. We will be using LSTM nodes which have the ability to hold information over long-periods of time. In our case, the information we would be storing would be the selected stock closing price. Our analysis will also utilize time-series forecasting.***
 
 ***OBJECTIVES:***
-  ***Our main objectives for this project includes predicting the TSLA stock price through LSTM Neural Network Nodes. In performing our test and analysis, we will be utilizing these nodes and their storage capabilities to accurately predict our stock prices.***
+  ***Our main objectives for this project includes predicting the stock price through LSTM Neural Network Nodes. In performing our test and analysis, we will be utilizing these nodes and their storage capabilities to accurately predict our stock prices.***
 
 ***OUR DATASET:*** 
   ***All Financial Data comes from Yahoo Finance.***
