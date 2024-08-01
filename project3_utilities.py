@@ -6,108 +6,104 @@ from datetime import datetime
 from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Dropout
-from tensorflow.keras.callbacks import EarlyStopping
+#from sklearn.metrics import mean_absolute_percentage_error
+from sklearn.metrics import mean_squared_error
 
+
+
+import warnings
+warnings.filterwarnings('ignore')
 
 def get_LSTM_predictions(df, 
-                         train_test_split = 0.8, 
-                         window_size = 14, 
-                         batch_size = 100, 
-                         epochs = 5, 
-                         layer1_nodes = 64, 
-                         layer2_nodes = 64, 
-                         layer3_nodes = 64,
-                         verbose = 0) :
+                         train_test_split=0.8, 
+                         window_size=14, 
+                         batch_size=100, 
+                         epochs=5, 
+                         layer1_nodes=64, 
+                         layer2_nodes=64, 
+                         layer3_nodes=64,
+                         verbose=0) :
 
-    # Had some issues after loading the test data in from a csv, it lost the 
-    # data types, was passing them in as strings, so I need to force this here.
+    # Ensure data types
     train_test_split = float(train_test_split)
     window_size = int(window_size)
     batch_size = int(batch_size) 
     epochs = int(epochs)
     layer1_nodes = int(layer1_nodes)
-    layer2_nodes = int(layer2_nodes)
-    layer3_nodes = int(layer3_nodes)
+    layer2_nodes = int(layer1_nodes)
+    layer3_nodes = int(layer1_nodes)
     verbose = int(verbose)
 
-    # Calculate where and how much the data should be split for train and test.
-    train_data_len   = int(len(df) * float(train_test_split))
-    test_data_len    = int(len(df)-float(train_data_len))
+    # Split the data into training and testing sets
+    train_data_len = int(len(df) * train_test_split)
+    test_data_len = len(df) - train_data_len
 
     # Features to include
-    features = ["Open","High","Low","Volume"]
+    features = ["Open", "High", "Low", "Volume"]
 
-    # Scale the close prices to be in the range from 0 to 1
+    # Scale the features and target
     scaler = MinMaxScaler(feature_range=(0, 1))
-    X_scaled_df = scaler.fit_transform(df[features])
-    y_scaled_df = scaler.fit_transform(df["Close"].to_frame())
+    scaled_features = scaler.fit_transform(df[features])
+    target_scaler = MinMaxScaler(feature_range=(0, 1))
+    scaled_target = target_scaler.fit_transform(df["Close"].values.reshape(-1, 1))
 
     # Create the datasets
-    X_train_data = X_scaled_df[:train_data_len]
-    X_test_data  = X_scaled_df[train_data_len - window_size:]
-    y_train_data = y_scaled_df[:train_data_len]
-    y_test_data  = y_scaled_df[train_data_len - window_size:]
+    X_train_data = scaled_features[:train_data_len]
+    X_test_data = scaled_features[train_data_len - window_size:]
+    y_train_data = scaled_target[:train_data_len]
+    y_test_data = scaled_target[train_data_len - window_size:]
 
-    X_train = []
-    y_train = []
+    X_train, y_train = [], []
 
-    # Populate the X_train and y_train, using sliding windows for X.
+    # Populate the X_train and y_train datasets using sliding windows
     for i in range(window_size, len(X_train_data)):
         X_train.append(X_train_data[i-window_size:i])
         y_train.append(y_train_data[i])
-    
+
     # Convert the X_train and y_train to numpy arrays
     X_train = np.array(X_train)
     y_train = np.array(y_train)
 
-    # LSTMs expect the input data to be in a three-dimensional array with 
-    # the following shape: [samples, window_size, features]
-    # 
-    # I am being very overtly clear here for my own understanding, this is new for me:
-    number_of_sequences_in_data_set = X_train.shape[0]
-    size_of_sliding_window = X_train.shape[1]
-    number_of_features = len(features)
+    # Reshape the data for LSTM input
+    X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], len(features)))
 
-    X_train = np.reshape(X_train, (number_of_sequences_in_data_set,
-                                   size_of_sliding_window,
-                                   number_of_features))
-
-    # Create the X_test and y_test datasets
+    # Create the X_test dataset
     X_test = []
-    y_test = y_test_data[int(train_data_len):int(train_data_len+test_data_len), :]
-
     for i in range(window_size, len(X_test_data)):
         X_test.append(X_test_data[i-window_size:i])
-
-    # Convert the data to a numpy array
     X_test = np.array(X_test)
+    X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], len(features)))
 
-    # Reshape the data into the shape [samples, window_size, features]
-    X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], number_of_features))
-
-    # Early stopping monitors the model’s performance on a validation set and stops 
-    # training when the performance stops improving.
-    # early_stopping = EarlyStopping(monitor='val_loss', 
-    #                                patience=10, 
-    #                                restore_best_weights=True)
+    y_test = y_test_data[window_size:]
 
     # Build the model
     model = Sequential()
-    model.add(LSTM(units=layer1_nodes,  return_sequences=True))
+    model.add(LSTM(units=layer1_nodes, return_sequences=True, input_shape=(window_size, len(features))))
     model.add(Dropout(0.2))
-    model.add(LSTM(units=layer2_nodes,  return_sequences=False))
+    model.add(LSTM(units=layer2_nodes, return_sequences=False))
     model.add(Dropout(0.2))
     model.add(Dense(units=layer3_nodes, activation='relu'))
     model.add(Dense(units=1))
-    model.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
+    model.compile(optimizer='adam', loss='mean_squared_error')
 
     # Train the model
     model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, verbose=verbose)
 
-    # Get the predictions
-    predictions = scaler.inverse_transform(model.predict(X_test))
+    # Get the predictions for the test data
+    predictions = model.predict(X_test)
+    predictions = target_scaler.inverse_transform(predictions)
 
-    return (predictions, model)
+    # Evaluate the model
+    mse = mean_squared_error(y_test, predictions)
+    rmse = np.sqrt(mse)
+
+    # Predict the next day's close price
+    last_sequence = scaled_features[-window_size:]
+    last_sequence = np.expand_dims(last_sequence, axis=0)
+    predicted_next_day_scaled = model.predict(last_sequence)
+    predicted_next_day_close = target_scaler.inverse_transform(predicted_next_day_scaled)[0][0]
+
+    return predictions, model, predicted_next_day_close, rmse
 
 def plot_predictions(df, ticker_symbol, show_all) :
     
@@ -174,7 +170,7 @@ def score_the_model(df, start_date, end_date, verbose=False) :
     # Filter the DataFrame based on the date range
     filtered_df = df[(df.index >= start_date) & (df.index < end_date)]
 
-    initial_price = filtered_df.iloc[0]["Close"]
+    initial_price = filtered_df.iloc[0]["Open"]
     final_actual_price = filtered_df.iloc[-1]["Close"]
     initial_buy_state = filtered_df.iloc[0]["Buy_Sell"]
     current_stock_count = 0
@@ -220,9 +216,12 @@ def score_the_model(df, start_date, end_date, verbose=False) :
         # The money is still in the market and we need to cash out.
         current_balance = current_stock_count * filtered_df.iloc[-1]["Close"]
 
+    total_profit = current_balance - final_actual_price
+    final_actual_profit = final_actual_price - initial_price
+
     if verbose:
         print()
         print("Final Balance: ", current_balance)
         print("Difference between actual close price and final balance: ", current_balance - final_actual_price)
 
-    return (current_balance - final_actual_price)
+    return (total_profit, final_actual_price, final_actual_profit)

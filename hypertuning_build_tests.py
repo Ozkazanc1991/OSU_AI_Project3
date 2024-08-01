@@ -16,7 +16,7 @@ df = yf.Ticker(ticker_symbol).history(period='max')
 test_splits = [0.75,0.8,0.85,0.9]
 window_sizes = [7,14,30,100,365]
 batch_sizes = [1,10,100,1000]
-epoch_sizes = [1,5,10]
+epoch_sizes = [1,5,25,50]
 layer1_nodes = [16,32,64,128]
 layer2_nodes = [16,32,64,128]
 layer3_nodes = [16,32,64,128]
@@ -57,30 +57,41 @@ def write_test_case(test_case, output_file_number, fieldnames) :
 
 
 
-current_file = 1
-total_files = 7
+current_file = 0
 fieldnames=settings[0].keys()
-
-
-# Start the files, write the headers.
-for i in range(1,total_files+1) :
-    with open(f"Test_Cases/testcases_{i}.csv", mode='w', newline='') as file:
-        writer = csv.DictWriter(file, fieldnames)
-        writer.writeheader()
-    file.close()
+test_case_limit_per_file = 100
+test_case_count = 999 # starting this higher than the limit so it creates the first file.
 
 # iterate through the settings, popping off a random setting and writing it 
 # to a test file
 while(settings) :
 
-    # Randomly pull a test case from the list, reducing the size of list by one
-    (settings, selected_setting) = get_test_case(settings)
+    # We only want so many test cases in a single test file, so while the
+    # count is less than the limit, we'll keep writing.
+    if test_case_count < test_case_limit_per_file : 
 
-    # Write the test case to the file
-    write_test_case(selected_setting, current_file, fieldnames)
+        # Randomly pull a test case from the list, reducing the size of list by one
+        (settings, selected_setting) = get_test_case(settings)
 
-    if current_file == total_files : current_file = 1
-    else : current_file += 1
+        # Write the test case to the file
+        write_test_case(selected_setting, current_file, fieldnames)
+        print(f"Writing test case {test_case_count} to file {current_file}...")
+        test_case_count += 1
+
+    
+    # Now the count of test cases is at the limit, so we need to start a new file 
+    # and reset the count.
+    else : 
+        current_file += 1
+        test_case_count = 0
+        print(f"Creating a new test file number: {current_file}...")
+
+        with open(f"Test_Cases/testcases_{current_file}.csv", mode='w', newline='') as file:
+            writer = csv.DictWriter(file, fieldnames)
+            writer.writeheader()
+        file.close()
+
+
 
 
 
