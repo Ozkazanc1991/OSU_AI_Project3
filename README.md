@@ -18,7 +18,8 @@
 ***MISC NOTES:***
   ***In creating our LSTM Model, we enabled a user function that allows for input of a 'stock-ticker' letting the user choose what stock they would like to see information for. This increases the functionality and capabilities ten-fold.***
   ***Our model hypertunes / trains our information by years.***
-  ***Our dataset is trained on three node layers with our activation being 'relu'.***
+  ***Our dataset is trained on three node layers with our activation being 'Relu'.***
+  ***We would like to note that our project is focused around stocks that perform at their highest volume during regular trading hours. This does not fully pertain to Index's***
 
 Programming Language Used: Python.
 
